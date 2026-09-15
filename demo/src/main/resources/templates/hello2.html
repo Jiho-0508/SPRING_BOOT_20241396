@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>두 번째 헬로 페이지</title>
+</head>
+<body>
+    <h1 th:text="${title}">제목</h1>
+    <p th:text="${author}">작성자</p>
+    <p th:text="${framework}">프레임워크</p>
+    <p th:text="${viewEngine}">뷰엔진</p>
+    <p th:text="${description}">설명</p>
+    
+    <br>
+    <a href="/hello">첫 번째 페이지로 돌아가기</a>
+</body>
+</html>
