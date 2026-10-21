@@ -1,6 +1,7 @@
 package com.example.demo.model.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -15,6 +16,8 @@ import org.springframework.security.core.userdetails.*; // User, UserDetails 등
 
 @Service // 서비스 등록
 public class MemberService implements UserDetailsService { // 로그인을 위한 인터페이스 제공
+    private boolean isBlank(String value) { return value == null || value.isBlank(); } // 클래스 아래쪽
+
     
     @Autowired
     private MemberRepository memberRepository;
@@ -24,6 +27,9 @@ public class MemberService implements UserDetailsService { // 로그인을 위�
     private static final List<String> ROLES = List.of("USER", "ADMIN");
 
     public Member signup(MemberForm form) { // 회원가입
+    if (isBlank(form.getUsername()) || isBlank(form.getPassword()) || isBlank(form.getName())) {
+        throw new IllegalArgumentException("아이디, 비밀번호, 이름은 필수입니다.");
+    }
         if (memberRepository.existsByUsername(form.getUsername())) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
@@ -54,14 +60,14 @@ public class MemberService implements UserDetailsService { // 로그인을 위�
     public List<Member> findAll() { // MemberService : 전체 회원 (id 순서)
         return memberRepository.findAll(Sort.by("id"));
     }
-    public void changeRole(Long id, String role) { // 권한 변경
+    public Member changeRole(Long id, String role) { // 권한 변경
         if (!ROLES.contains(role)) { // 허용된 권한만
             throw new IllegalArgumentException("허용되지 않는 권한입니다 : " + role);
         }
         Member member = memberRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
                 member.setRole(role);
-                memberRepository.save(member); // UPDATE (id 가 있으면 수정)
+                return memberRepository.save(member);
             }
     @PreAuthorize("hasRole('ADMIN')") // 관리자만 실행 가능 (2차 잠금)
 
@@ -69,6 +75,9 @@ public class MemberService implements UserDetailsService { // 로그인을 위�
         Member member = memberRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
             memberRepository.delete(member); // DELETE
+    }
+    public Optional<Member> findById(Long id) {
+        return memberRepository.findById(id);
     }
 
 }
