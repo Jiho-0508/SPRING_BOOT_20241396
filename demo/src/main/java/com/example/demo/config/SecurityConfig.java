@@ -41,6 +41,11 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/login?logout") // 로그아웃 후 이동
                 .invalidateHttpSession(true) // 세션 삭제
                 .deleteCookies("JSESSIONID", "remember-me")) // 쿠키 삭제
+                // 5주차: 로그인 상태 유지 설정
+                .rememberMe(remember -> remember
+                .key("my-project-remember-me-key")
+                .tokenValiditySeconds(604800)
+            )
                 // 5. [7주차] REST API 설정
                 .httpBasic(Customizer.withDefaults()) // Postman : 요청마다 아이디·비밀번호 (Basic 인증)
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**")) // JSON API 는 CSRF 토큰 검사 제외

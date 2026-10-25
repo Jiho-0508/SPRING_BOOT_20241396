@@ -30,6 +30,9 @@ public class MemberService implements UserDetailsService { // 로그인을 위�
     if (isBlank(form.getUsername()) || isBlank(form.getPassword()) || isBlank(form.getName())) {
         throw new IllegalArgumentException("아이디, 비밀번호, 이름은 필수입니다.");
     }
+        if (form.getPasswordConfirm() == null || !form.getPassword().equals(form.getPasswordConfirm())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }    
         if (memberRepository.existsByUsername(form.getUsername())) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
