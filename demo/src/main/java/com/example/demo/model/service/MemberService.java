@@ -96,6 +96,16 @@ public class MemberService implements UserDetailsService {
     public List<Member> findAll() {
         return memberRepository.findAll(Sort.by("id"));
     }
+    // 회원 검색: 아이디 또는 이름에 검색어가 포함된 회원 조회
+    public List<Member> searchMembers(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return findAll();
+    }
+
+    return memberRepository
+            .findByUsernameContainingOrNameContaining(
+                    keyword, keyword);
+    }
 
     // 현재 로그인한 사용자의 아이디 조회
     private String getCurrentUsername() {
