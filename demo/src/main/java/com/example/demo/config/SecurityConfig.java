@@ -27,7 +27,9 @@ public class SecurityConfig {
                 .requestMatchers("/", "/hello", "/detailed_web.html",
                                  "/login", "/signup", "/error").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
-                .requestMatchers("/admin/**","/api/admin/**").hasRole("ADMIN") // [6주차] 관리자만
+                .requestMatchers("/admin/**","/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/testdb").hasAnyRole("ADMIN", "MANAGER")
+                 // [6주차] 관리자만
                 .requestMatchers("/api/hello").permitAll()
                 .anyRequest().authenticated())
                 

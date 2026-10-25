@@ -12,4 +12,10 @@ public class TestDB {
     private Long id;
     @Column(nullable = true) // 테이블의 컬럼 설정 값을 명시
     private String name;
+
+    @Column(nullable = true) // 나이
+    private Integer age;
+
+    @Column(nullable = true) // 성별
+    private String gender;
 }
