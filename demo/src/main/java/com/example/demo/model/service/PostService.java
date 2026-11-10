@@ -28,6 +28,10 @@ public class PostService {
         return postRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
     }
 
+    public List<Post> findMyPosts(String username) { // 내가 쓴 글만 조회
+        return postRepository.findByAuthor_UsernameOrderByIdDesc(username);
+    }
+
     public Post write(PostForm form, String username) { // 글쓰기 (작성자 = 로그인한 회원)
         validate(form);
         Member author = memberRepository.findByUsername(username)
@@ -53,6 +57,12 @@ public class PostService {
     public Post findById(Long id) { // 글 1개 (없으면 404 → templates/error/404.html)
         return postRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "글이 존재하지 않습니다."));
+    }
+
+    public Post read(Long id) { // 게시글 상세 조회 및 조회수 증가
+        Post post = findById(id);
+        post.setViewCount(post.getViewCount() + 1);
+        return postRepository.save(post);
     }
 
     public Post findForEdit(Long id) { // 수정 화면에 보여 줄 글 (본인 글만)
