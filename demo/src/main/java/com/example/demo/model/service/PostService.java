@@ -18,6 +18,7 @@ import com.example.demo.model.repository.PostRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.data.domain.Page;
+import java.util.Collection;
 
 @Service // 게시판 서비스
 public class PostService {
@@ -25,6 +26,8 @@ public class PostService {
     private PostRepository postRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired // [11주차] 단계 2 : 업로드 파일 저장소 (제공 코드)
+    private FileStore fileStore;
 
     public List<Post> findAll() { // 전체 목록 (최신 글이 위로)
         return postRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
@@ -43,10 +46,16 @@ public class PostService {
         post.setContent(form.getContent());
         post.setAuthor(author); // 작성자는 화면이 아니라 서버가 정한다
         post.setCreatedAt(LocalDateTime.now());
+        post.setCapacity(form.getCapacity()); // [11주차] 단계 1 : 정원 (비우면 null = 일반 글)
+        post.setPosterFile(fileStore.save(form.getPoster())); // [11주차] 단계 2 : 포스터 저장 → 파일 이름 (없으면 null)
         return postRepository.save(post); // INSERT
     }
 
     private void validate(PostForm form) { // 빈 값 검사 (5주차 회원가입과 같은 방식)
+        // [11주차] 단계 1 : 모집 인원은 1~100명
+        if (form.getCapacity() != null && (form.getCapacity() < 1 || form.getCapacity() > 100)) {
+            throw new IllegalArgumentException("모집 인원은 1~100명으로 입력하세요.");
+        }
         if (form.getTitle() == null || form.getTitle().isBlank()
                 || form.getContent() == null || form.getContent().isBlank()) {
             throw new IllegalArgumentException("제목과 내용을 모두 입력하세요.");
@@ -66,6 +75,11 @@ public class PostService {
             return postRepository.findAll(pageable);
         }
         return postRepository.search(keyword.trim(), pageable); // 검색 결과도 10개씩
+    }
+
+    // [11주차] 단계 3 : 바구니에 담긴 글들 (번호 목록으로 한 번에)
+    public List<Post> findAllById(Collection<Long> ids) {
+        return postRepository.findAllById(ids); // SELECT ... WHERE id IN (?, ?, ?)
     }
 
     public Post findById(Long id) { // 글 1개 (없으면 404 → templates/error/404.html)
