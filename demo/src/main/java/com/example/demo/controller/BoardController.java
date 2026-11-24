@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.demo.model.domain.Post;
 import com.example.demo.model.dto.PostForm;
@@ -48,7 +49,7 @@ public class BoardController {
         return "board/list";
     }
 
-    // 내가 쓴 글 페이징 : GET /board/my?page=0 (로그인 필요)
+    // 내가 쓴 글 페이징 : GET /board/my?page=0
     @GetMapping("/my")
     public String myPosts(
             Principal principal,
@@ -66,7 +67,7 @@ public class BoardController {
         return "board/list";
     }
 
-    // 글쓰기 화면 : GET /board/write (로그인 필요)
+    // 글쓰기 화면 : GET /board/write
     @GetMapping("/write")
     public String writeForm() {
         return "board/form";
@@ -91,7 +92,7 @@ public class BoardController {
         }
     }
 
-    // 상세 : GET /board/3 (누구나)
+    // 상세 : GET /board/3
     @GetMapping("/{id}")
     public String detail(
             @PathVariable Long id,
@@ -144,12 +145,23 @@ public class BoardController {
         }
     }
 
-    // 삭제 : POST /board/3/delete
+    // [11주차 연습문제 ②] 삭제 : POST /board/3/delete
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id) {
+    public String delete(
+            @PathVariable Long id,
+            RedirectAttributes redirect) {
 
-        postService.delete(id);
+        try {
+            postService.delete(id);
 
-        return "redirect:/board?deleted";
+            return "redirect:/board?deleted";
+
+        } catch (IllegalStateException e) {
+
+            // 신청 내역이 있는 모집글은 삭제할 수 없다는 메시지 전달
+            redirect.addAttribute("deleteError", e.getMessage());
+
+            return "redirect:/board";
+        }
     }
 }

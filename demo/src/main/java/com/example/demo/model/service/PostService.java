@@ -21,6 +21,7 @@ import com.example.demo.model.domain.Post;
 import com.example.demo.model.dto.PostForm;
 import com.example.demo.model.repository.MemberRepository;
 import com.example.demo.model.repository.PostRepository;
+import com.example.demo.model.repository.EnrollmentRepository;
 
 @Service
 public class PostService {
@@ -30,6 +31,9 @@ public class PostService {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
 
     @Autowired
     private FileStore fileStore;
@@ -163,14 +167,25 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    // 게시글 삭제
+    // [11주차 연습문제 ②] 게시글 삭제
     public void delete(Long id) {
         Post post = findById(id);
 
+        // 관리자 또는 작성자만 삭제 가능
         if (!isAdmin()) {
             checkWriter(post);
         }
 
+        // 신청 내역이 있으면 삭제할 수 없다.
+        if (enrollmentRepository.existsByPost(post)) {
+            throw new IllegalStateException(
+                    "신청자가 있는 모집글은 삭제할 수 없습니다.");
+        }
+
+        // 신청 내역이 없으면 포스터 파일 삭제
+        fileStore.delete(post.getPosterFile());
+
+        // 게시글 삭제
         postRepository.delete(post);
     }
 

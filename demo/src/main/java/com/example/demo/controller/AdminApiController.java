@@ -1,3 +1,4 @@
+
 package com.example.demo.controller;
 
 import java.net.URI;
@@ -17,68 +18,74 @@ import com.example.demo.model.service.MemberService;
 @RequestMapping("/api/admin/members")
 public class AdminApiController {
 
-    @Autowired
-    MemberService memberService;
+        @Autowired
+        MemberService memberService;
 
-    // 회원 목록 및 검색
-    // GET /api/admin/members
-    // GET /api/admin/members?keyword=검색어
-    @GetMapping
-    public List<MemberResponse> list(
-            @RequestParam(required = false) String keyword) {
+        // 회원 목록 및 검색
+        // GET /api/admin/members
+        // GET /api/admin/members?keyword=검색어
+        @GetMapping
+        public List<MemberResponse> list(
+                        @RequestParam(required = false) String keyword) {
 
-        List<Member> members = memberService.searchMembers(keyword);
+                List<Member> members = memberService.searchMembers(keyword);
 
-        return members.stream()
-                .map(MemberResponse::from)
-                .toList();
-    }
+                return members.stream()
+                                .map(MemberResponse::from)
+                                .toList();
+        }
 
-    // 회원 한 명 조회
-    // GET /api/admin/members/3
-    @GetMapping("/{id}")
-    public ResponseEntity<MemberResponse> get(
-            @PathVariable Long id) {
+        // 회원 한 명 조회
+        // GET /api/admin/members/3
+        @GetMapping("/{id}")
+        public ResponseEntity<MemberResponse> get(
+                        @PathVariable Long id) {
 
-        return memberService.findById(id)
-                .map(member ->
-                        ResponseEntity.ok(MemberResponse.from(member)))
-                .orElse(ResponseEntity.notFound().build());
-    }
+                return memberService.findById(id)
+                                .map(member -> ResponseEntity.ok(MemberResponse.from(member)))
+                                .orElse(ResponseEntity.notFound().build());
+        }
 
-    // 회원 등록
-    // POST /api/admin/members
-    @PostMapping
-    public ResponseEntity<MemberResponse> create(
-            @RequestBody MemberForm form) {
+        // 회원 등록
+        // POST /api/admin/members
+        @PostMapping
+        public ResponseEntity<MemberResponse> create(
+                        @RequestBody MemberForm form) {
 
-        Member saved = memberService.signup(form);
+                Member saved = memberService.signup(form);
 
-        return ResponseEntity
-                .created(URI.create("/api/admin/members/" + saved.getId()))
-                .body(MemberResponse.from(saved));
-    }
+                return ResponseEntity
+                                .created(URI.create("/api/admin/members/" + saved.getId()))
+                                .body(MemberResponse.from(saved));
+        }
 
-    // 회원 권한 변경
-    // PATCH /api/admin/members/3/role
-    @PatchMapping("/{id}/role")
-    public ResponseEntity<MemberResponse> changeRole(
-            @PathVariable Long id,
-            @RequestBody RoleRequest request) {
+        // 회원 권한 변경
+        // PATCH /api/admin/members/3/role
+        @PatchMapping("/{id}/role")
+        public ResponseEntity<MemberResponse> changeRole(
+                        @PathVariable Long id,
+                        @RequestBody RoleRequest request) {
 
-        Member member = memberService.changeRole(id, request.role());
+                Member member = memberService.changeRole(id, request.role());
 
-        return ResponseEntity.ok(MemberResponse.from(member));
-    }
+                return ResponseEntity.ok(MemberResponse.from(member));
+        }
 
-    // 회원 삭제
-    // DELETE /api/admin/members/3
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long id) {
+        // 회원 삭제
+        // DELETE /api/admin/members/3
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> delete(
+                        @PathVariable Long id) {
 
-        memberService.deleteMember(id);
+                try {
+                        memberService.deleteMember(id);
 
-        return ResponseEntity.noContent().build();
-    }
+                        return ResponseEntity.noContent().build();
+
+                } catch (IllegalArgumentException e) {
+
+                        // 삭제 제한 조건에 해당하면 HTTP 400 반환
+                        return ResponseEntity.badRequest().build();
+                }
+        }
 }

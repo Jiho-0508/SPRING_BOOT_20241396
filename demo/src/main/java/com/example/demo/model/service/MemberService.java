@@ -1,3 +1,4 @@
+
 package com.example.demo.model.service;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import com.example.demo.model.dto.MemberForm;
 import com.example.demo.model.repository.CommentRepository;
 import com.example.demo.model.repository.MemberRepository;
 import com.example.demo.model.repository.PostRepository;
+import com.example.demo.model.repository.EnrollmentRepository;
 
 @Service
 public class MemberService implements UserDetailsService {
@@ -39,6 +41,10 @@ public class MemberService implements UserDetailsService {
 
         @Autowired
         private CommentRepository commentRepository;
+
+        // [11주차 연습문제 ②] 신청 내역 Repository 추가
+        @Autowired
+        private EnrollmentRepository enrollmentRepository;
 
         // 관리자가 부여할 수 있는 권한
         private static final List<String> ROLES = List.of("USER", "MANAGER", "ADMIN");
@@ -159,6 +165,12 @@ public class MemberService implements UserDetailsService {
 
                 // 관리자 본인 계정 삭제 방지
                 checkNotMe(member);
+
+                // [11주차 연습문제 ②] 신청 내역이 있는 회원은 삭제할 수 없음
+                if (enrollmentRepository.existsByMember(member)) {
+                        throw new IllegalArgumentException(
+                                        "신청 내역이 있는 회원은 삭제할 수 없습니다.");
+                }
 
                 // 작성한 게시글이나 댓글이 있는 회원은 삭제할 수 없음
                 if (postRepository.existsByAuthor(member)
